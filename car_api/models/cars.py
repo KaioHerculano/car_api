@@ -88,5 +88,5 @@ class Car(Base):
     )
     owner: Mapped['User'] = relationship(
         'User',
-        back_populates = 'users'
+        back_populates = 'cars',
     )

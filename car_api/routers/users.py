@@ -1,27 +1,61 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, HTTPException, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, exists
 
+from car_api.core.database import get_session
+from car_api.core.security import get_password_hash
 from car_api.db import USERS
+from car_api.models.users import User
 from car_api.schemas.users import(
     UserSchema,
     UserPublicSchema,
     UserListPublicSchema,
 )
 
-
 router = APIRouter()
+
 
 @router.post(
     path='/',
     status_code=status.HTTP_201_CREATED,
     response_model=UserPublicSchema,
+    summary='Criar novo usuário'
 )
-async def create_user(user: UserSchema):
-    user_with_id = UserPublicSchema(
-        **user.model_dump(),
-        id=len(USERS) + 1
+async def create_user(
+    user: UserSchema,
+    db: AsyncSession = Depends(get_session),
+):
+    username_exists = await db.scalar(
+        select(exists().where(User.username == user.username))
     )
-    USERS.append(user_with_id)
-    return user_with_id
+
+    if username_exists:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Username já está em uso',
+        )
+
+    email_exists = await db.scalar(
+        select(exists().where(User.email == user.email))
+    )
+
+    if email_exists:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Email já está em uso',
+        )
+
+    db_user = User(
+        username=user.username,
+        email=user.email,
+        password=get_password_hash(user.password),
+    )
+
+    db.add(db_user)
+    await db.commit()
+    await db.refresh(db_user)
+
+    return db_user
 
 
 @router.get(

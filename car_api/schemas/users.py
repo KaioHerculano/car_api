@@ -1,6 +1,6 @@
-from typing import Optional, List
-
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 
 
@@ -12,13 +12,13 @@ class UserSchema(BaseModel):
     @field_validator('username')
     def username_min_length(cls, v):
         if len(v) < 3:
-            raise ValueError ('Username deve ter pelo menos 3 caracteres')
+            raise ValueError('Username deve ter pelo menos 3 caracteres')
         return v
 
     @field_validator('password')
     def password_min_length(cls, v):
         if len(v) < 6:
-            raise ValueError ('Password deve ter pelo menos 3 caracteres')
+            raise ValueError('Password deve ter pelo menos 3 caracteres')
         return v
 
 
@@ -30,13 +30,13 @@ class UserUpdateSchema(BaseModel):
     @field_validator('username')
     def username_min_length(cls, v):
         if len(v) < 3:
-            raise ValueError ('Username deve ter pelo menos 3 caracteres')
+            raise ValueError('Username deve ter pelo menos 3 caracteres')
         return v
 
     @field_validator('password')
     def password_min_length(cls, v):
         if len(v) < 6:
-            raise ValueError ('Password deve ter pelo menos 3 caracteres')
+            raise ValueError('Password deve ter pelo menos 3 caracteres')
         return v
 
 

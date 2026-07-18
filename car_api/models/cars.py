@@ -3,7 +3,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import ForeignKey, String, Text, Numeric, Integer, func
+from sqlalchemy import ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from car_api.models import Base
@@ -23,7 +23,7 @@ class FuelType(str, Enum):
 
 class TransmissionType(str, Enum):
     MANUAL = 'manual'
-    AUTOMATIC  = 'automatic'
+    AUTOMATIC = 'automatic'
     SEMI_AUTOMATIC = 'semi_automatic'
     CVT = 'cvt'
 
@@ -82,11 +82,8 @@ class Car(Base):
         server_default=func.now(),
     )
 
-    brand: Mapped['Brand'] = relationship(
-        'Brand',
-        back_populates = 'cars'
-    )
+    brand: Mapped['Brand'] = relationship('Brand', back_populates='cars')
     owner: Mapped['User'] = relationship(
         'User',
-        back_populates = 'cars',
+        back_populates='cars',
     )

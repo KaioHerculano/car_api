@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
 
 import jwt
-from fastapi import HTTPException, status, Depends
+from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pwdlib import PasswordHash
 from sqlalchemy import select
@@ -48,7 +48,7 @@ def verify_token(token: str) -> Dict:
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired",
+            detail='Token has expired',
             headers={'WWW-Authenticate': 'Bearer'},
         )
     except jwt.InvalidTokenError:
@@ -115,5 +115,5 @@ def verify_car_ownership(user: User, car_owner_id: int) -> None:
     if user.id != car_owner_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail='Not enough permissions to access this car'
+            detail='Not enough permissions to access this car',
         )

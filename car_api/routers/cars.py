@@ -1,22 +1,23 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, status, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, exists
 from sqlalchemy.orm import selectinload
 
 from car_api.core.database import get_session
 from car_api.core.security import get_current_user, verify_car_ownership
-from car_api.models.cars import Car, Brand, FuelType, TransmissionType
+from car_api.models.cars import Brand, Car, FuelType, TransmissionType
 from car_api.models.users import User
-from car_api.schemas.cars import(
-    CarSchema,
-    CarPublicSchema,
-    CarUpdateSchema,
+from car_api.schemas.cars import (
     CarListPublicSchema,
+    CarPublicSchema,
+    CarSchema,
+    CarUpdateSchema,
 )
 
 router = APIRouter()
+
 
 @router.post(
     path='/',
@@ -57,7 +58,6 @@ async def create_car(
             detail='Proprietario não encontrada',
         )
 
-
     db_car = Car(
         model=car.model,
         factory_year=car.factory_year,
@@ -96,26 +96,38 @@ async def create_car(
 async def list_cars(
     offset: int = Query(0, ge=0, description='Número de registros para pular'),
     limit: int = Query(100, ge=1, le=100, description='Limite de registros'),
-    search: Optional[str] = Query(None, description='Buscar por modelo cor ou placa'),
+    search: Optional[str] = Query(
+        None, description='Buscar por modelo cor ou placa'
+    ),
     brand_id: Optional[int] = Query(None, description='Filtrar por marca'),
-    owner_id: Optional[int] = Query(None, description='Filtrar por proprietário'),
-    fuel_type: Optional[FuelType] = Query(None, description='Filtra por tipo combustivel'),
-    transmission: Optional[TransmissionType] = Query(None, description='Filtrar por transmissão'),
-    is_available: Optional[bool] = Query(None, description='Filtrar por disponibilidade'),
+    owner_id: Optional[int] = Query(
+        None, description='Filtrar por proprietário'
+    ),
+    fuel_type: Optional[FuelType] = Query(
+        None, description='Filtra por tipo combustivel'
+    ),
+    transmission: Optional[TransmissionType] = Query(
+        None, description='Filtrar por transmissão'
+    ),
+    is_available: Optional[bool] = Query(
+        None, description='Filtrar por disponibilidade'
+    ),
     min_price: Optional[float] = Query(None, description='Preço mínimo'),
     max_price: Optional[float] = Query(None, description='Preço máximo'),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
-    query = select(Car).options(selectinload(Car.brand), selectinload(Car.owner))
+    query = select(Car).options(
+        selectinload(Car.brand), selectinload(Car.owner)
+    )
     query = query.where(Car.owner_id == current_user.id)
 
     if search:
         search_filter = f'%{search}%'
         query = query.where(
-            (Car.model.ilike(search_filter)) |
-            (Car.color.ilike(search_filter)) |
-            (Car.plate.ilike(search_filter))
+            (Car.model.ilike(search_filter))
+            | (Car.color.ilike(search_filter))
+            | (Car.plate.ilike(search_filter))
         )
 
     if brand_id is not None:
@@ -160,7 +172,7 @@ async def list_cars(
 async def get_car(
     car_id: int,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_session),    
+    db: AsyncSession = Depends(get_session),
 ):
     result = await db.execute(
         select(Car)
@@ -172,7 +184,7 @@ async def get_car(
     if not car:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail='Carro não encontrado'
+            detail='Carro não encontrado',
         )
 
     verify_car_ownership(current_user, car.owner_id)
@@ -206,10 +218,11 @@ async def update_car(
 
     if 'plate' in update_data and update_data['plate'] != car.plate:
         plate_exists = await db.scalar(
-            select(exists().where(
-                (Car.plate == update_data['plate']) &
-                (Car.id != car_id)
-            ))
+            select(
+                exists().where(
+                    (Car.plate == update_data['plate']) & (Car.id != car_id)
+                )
+            )
         )
         if plate_exists:
             raise HTTPException(
@@ -226,7 +239,7 @@ async def update_car(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Marca não encontrada',
             )
-    
+
     if 'owner_id' in update_data:
         owner_exists = await db.scalar(
             select(exists().where(User.id == update_data['owner_id']))
@@ -275,5 +288,3 @@ async def delete_car(
 
     await db.delete(car)
     await db.commit()
-
-    return

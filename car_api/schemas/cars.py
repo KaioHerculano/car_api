@@ -1,6 +1,7 @@
-from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
+from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from car_api.models.cars import FuelType, TransmissionType
@@ -43,15 +44,15 @@ class CarSchema(BaseModel):
 
     @field_validator('factory_year', 'model_year')
     def year_validation(cls, v):
-            if v < 1800 or v > 2030:
-                raise ValueError('Ano deve estar entre 1800 e 2030')
-            return v
+        if v < 1800 or v > 2030:
+            raise ValueError('Ano deve estar entre 1800 e 2030')
+        return v
 
     @field_validator('price')
     def price_validation(cls, v):
-            if v <= 0:
-                raise ValueError('Preço deve ser maior que zero')
-            return v
+        if v <= 0:
+            raise ValueError('Preço deve ser maior que zero')
+        return v
 
 
 class CarUpdateSchema(BaseModel):
@@ -89,15 +90,15 @@ class CarUpdateSchema(BaseModel):
 
     @field_validator('factory_year', 'model_year')
     def year_validation(cls, v):
-            if v < 1800 or v > 2030:
-                raise ValueError('Ano deve estar entre 1800 e 2030')
-            return v
+        if v < 1800 or v > 2030:
+            raise ValueError('Ano deve estar entre 1800 e 2030')
+        return v
 
     @field_validator('price')
     def price_validation(cls, v):
-            if v <= 0:
-                raise ValueError('Preço deve ser maior que zero')
-            return v
+        if v <= 0:
+            raise ValueError('Preço deve ser maior que zero')
+        return v
 
 
 class CarPublicSchema(BaseModel):

@@ -1,7 +1,6 @@
 from fastapi import FastAPI, status
 
-from car_api.routers import users, brands, cars, auth
-
+from car_api.routers import auth, brands, cars, users
 
 app = FastAPI()
 

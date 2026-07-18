@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, exists
 
 from car_api.core.database import get_session
-from car_api.core.security import get_password_hash
+from car_api.core.security import get_password_hash, get_current_user
 from car_api.models.users import User
 from car_api.schemas.users import(
     UserSchema,
@@ -70,6 +70,7 @@ async def list_users(
     offset: int = Query(0, ge=0, description='Número de registros para pular'),
     limit: int = Query(100, ge=1, le=100, description='Limite de registros'),
     search: Optional[str] = Query(None, description='Buscar por username ou email'),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
     query = select(User)
@@ -101,6 +102,7 @@ async def list_users(
 )
 async def get_user(
         user_id: int,
+        current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_session),
 ):
     user = await db.get(User, user_id)
@@ -123,6 +125,7 @@ async def get_user(
 async def update_user(
     user_id: int,
     user_update: UserUpdateSchema,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
     user = await db.get(User, user_id)
@@ -180,6 +183,7 @@ async def update_user(
 )
 async def delete_user(
     user_id: int,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
     user = await db.get(User, user_id)

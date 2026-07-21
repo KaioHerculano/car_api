@@ -1,96 +1,243 @@
 # Car API
 
-API REST desenvolvida com FastAPI para gerenciamento de usuários, marcas e
-carros. O projeto foi criado durante a primeira etapa do curso FastMaster, da
-PycodeBR Treinamentos, com foco em backend Python, boas práticas de organização,
-validação de dados, autenticação e testes.
+Uma API REST para gerenciamento de carros e usu�rios, construída com FastAPI, SQLAlchemy e SQLite.
 
-## Sobre o projeto
+## Pré-requisitos
 
-A aplicação permite criar usuários, autenticar com JWT, cadastrar marcas e
-gerenciar carros associados aos usuários. A estrutura do projeto separa routers,
-schemas, models e configurações centrais, mantendo a API organizada e preparada
-para evolução.
+- Python 3.13 ou superior
+- pipx (para instalar Poetry)
+- Poetry (para gerenciamento de dependências)
 
-## Principais recursos
+## Configuração do Ambiente
 
-- API REST com FastAPI
-- Programação assíncrona com SQLAlchemy
-- Validação de dados com Pydantic
-- CRUD de usuários, marcas e carros
-- Autenticação com JSON Web Token
-- Hash e verificação de senhas
-- Migrations com Alembic
-- Testes automatizados com pytest
-- Banco SQLite em memória para testes
-- Documentação do projeto com MkDocs
+### 1. Instalação do pipx
 
-## Tecnologias
+O pipx é usado para instalar ferramentas Python em ambientes isolados.
+[Documentação do pipx](https://pipx.pypa.io/stable/installation/)
 
-- Python
-- FastAPI
-- Pydantic
-- SQLAlchemy
-- Alembic
-- SQLite
-- PyJWT
-- Pytest
-- MkDocs
-- Poetry
+#### No Linux:
+```bash
+sudo apt update
+sudo apt install pipx
+pipx ensurepath
+```
 
-## Como executar
+#### No macOS:
+```bash
+brew install pipx
+pipx ensurepath
+```
 
-Instale as dependências:
+#### No Windows:
+```bash
+python -m pip install --user pipx
+python -m pipx ensurepath
+```
+
+Após a instalação, reinicie o terminal ou execute:
+```bash
+source ~/.bashrc  # Linux
+source ~/.zshrc   # macOS com zsh
+```
+
+### 2. Instalação do Poetry
+
+Com o pipx instalado, instale o Poetry:
+
+```bash
+pipx install poetry
+```
+
+Verifique a instalação:
+```bash
+poetry --version
+```
+
+### 3. Instalação do Python
+
+#### No Linux:
+
+O Linux presa muito pela estabilidade, então é possível que mesmo com uma distribuição recente você encontre versões mais antigas rodando no sistema.
+
+> Ex: O Pop OS 22.04 LTS usa a versão **3.10.12** por padrão.
+
+Por isso, o recomendado é instalar utilizando o `poetry`.
+
+```
+poetry python install 3.13
+poetry env use 3.13
+```
+
+Dessa forma, qualquer comando do poetry usará a versão 3.13.
+
+Se quiser alterar a versão do terminal atual, pode rodar o seguinte comando:
+
+```
+$(poetry env activate)
+python3 --version
+```
+
+#### No Windows:
+
+Você pode fazer o download da versão 3.13 ou superior [aqui](https://www.python.org/downloads/windows/).
+
+#### No MacOS:
+
+TBD?
+
+## Configuração do Projeto
+
+### 1. Clone o repositório
+```bash
+git clone https://github.com/pycodebr/car_api.git
+cd car_api
+```
+
+### 2. Instalar dependências
+
+Instale todas as dependências do projeto (incluindo as de desenvolvimento):
 
 ```bash
 poetry install
 ```
 
-Crie um arquivo `.env` na raiz do projeto:
+Este comando irá:
+- Criar um ambiente virtual automaticamente
+- Instalar todas as dependências listadas em `pyproject.toml`
+- Instalar as dependências de desenvolvimento (pytest, ruff, taskipy)
 
-```env
-DATABASE_URL=sqlite+aiosqlite:///./car.db
-JWT_SECRET_KEY=change-this-secret
-JWT_ALGORITHM=HS256
-JWT_EXPIRATION_MINUTES=30
-```
+### 3. Configurar o banco de dados
 
-Aplique as migrations:
+Execute as migrações do Alembic para criar as tabelas no banco de dados:
 
 ```bash
+mv .env.example .env
 poetry run alembic upgrade head
 ```
 
-Execute a API:
+## Comandos Disponíveis (Taskipy)
 
+O projeto utiliza o Taskipy para automatizar tarefas comuns. Todos os comandos devem ser executados através do Poetry:
+
+### Executar a aplicação
 ```bash
 poetry run task run
 ```
+Inicia o servidor de desenvolvimento FastAPI na porta padrão.
 
-Depois acesse:
-
-- API: `http://127.0.0.1:8000`
-- Swagger UI: `http://127.0.0.1:8000/docs`
-- ReDoc: `http://127.0.0.1:8000/redoc`
-- Health check: `http://127.0.0.1:8000/health_check`
-
-## Testes
-
-Execute a suíte de testes com coverage:
-
+### Executar testes
 ```bash
 poetry run task test
 ```
+Este comando irá:
+- Executar o lint automaticamente (pre_test)
+- Rodar todos os testes com pytest
+- Gerar relat�rio de cobertura HTML (post_test)
 
-O relatório HTML de cobertura é gerado em `htmlcov/index.html`.
-
-## Documentação
-
-A documentação completa do projeto está em `docs/` e pode ser executada com:
-
+### Linting (verificação de código)
 ```bash
-poetry run task docs
+poetry run task lint
+```
+Verifica o código usando Ruff para identificar problemas de estilo e qualidade.
+
+### Formatação de código
+```bash
+poetry run task format
+```
+Este comando irá:
+- Executar correções automáticas do lint (pre_format)
+- Formatar o código usando Ruff
+
+## Estrutura do Projeto
+
+```
+car_api/
+    car_api/              # Código principal da aplicação
+        app.py            # Arquivo principal do FastAPI
+        core/             # Configurações e funcionalidades centrais
+            database.py   # Configurações do banco de dados
+            security.py   # Funções de segurança e autenticação
+            settings.py   # Configurações da aplicação
+        models/           # Modelos SQLAlchemy
+            base.py       # Modelo base
+            cars.py       # Modelo de carros
+            users.py      # Modelo de usuários
+        routers/          # Rotas da API
+            auth.py       # Rotas de autenticação
+            brands.py     # Rotas de marcas
+            cars.py       # Rotas de carros
+            users.py      # Rotas de usuários
+        schemas/          # Esquemas Pydantic
+            auth.py       # Esquemas de autenticação
+            brands.py     # Esquemas de marcas
+            cars.py       # Esquemas de carros
+            users.py      # Esquemas de usuários
+    migrations/           # Migrações do Alembic
+    tests/                # Testes automatizados
+    alembic.ini           # Configuração do Alembic
+    pyproject.toml        # Configuração do projeto e dependências
+    README.md             # Este arquivo
 ```
 
-Ela inclui visão geral, instalação, configuração, endpoints, autenticação,
-modelagem, testes, deploy e guidelines do projeto.
+## Dependências Principais
+
+- **FastAPI**: Framework web moderno e rápido
+- **SQLAlchemy**: ORM para Python
+- **Alembic**: Ferramenta de migração de banco de dados
+- **Aiosqlite**: Driver SQLite assíncrono
+- **Pydantic Settings**: Gerenciamento de configurações
+- **PWDLib**: Biblioteca para hash de senhas
+- **PyJWT**: Biblioteca para tokens JWT
+- **mkdocs**: Biblioteca para a documentação online do projeto
+
+## Dependências de Desenvolvimento
+
+- **Pytest**: Framework de testes
+- **Pytest-asyncio**: Suporte para testes assíncronos
+- **Ruff**: Linter e formatador de código
+- **Taskipy**: Automação de tarefas
+- **Coverage**: Relatórios de cobertura de testes
+
+## Executando Comandos no Ambiente Virtual
+
+Todos os comandos devem ser prefixados com `poetry run` para garantir que sejam executados no ambiente virtual correto:
+
+```bash
+# Executar a aplicação na porta 8000
+poetry run task run
+
+# Executar a documentação na porta 8001
+poetry run task docs
+
+# Executar testes
+poetry run task test
+
+# Verificar código
+poetry run task lint
+
+# Formatar código
+poetry run task format
+
+# Executar comandos do Alembic
+poetry run alembic upgrade head
+poetry run alembic revision --autogenerate -m "descrição da migração"
+
+# Executar pytest diretamente
+poetry run pytest
+
+# Executar outros comandos Python
+poetry run python -c "print('Hello World')"
+```
+
+## Desenvolvimento
+
+1. Faça suas alterações no código
+2. Execute os testes: `poetry run task test`
+3. Verifique o código: `poetry run task lint`
+4. Formate o código: `poetry run task format`
+5. Execute a aplicação: `poetry run task run`
+6. Execute a documentação: `poetry run task docs`
+
+## Relatórios de Cobertura
+
+Após executar os testes com `poetry run task test`, um relatório HTML de cobertura será gerado na pasta `htmlcov/`. Abra o arquivo `htmlcov/index.html` no seu navegador para visualizar o relatório detalhado.
